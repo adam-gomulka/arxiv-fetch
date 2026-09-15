@@ -30,7 +30,7 @@ jobs:
       - name: Fetch arXiv records
         env:
           ARXIV_CATEGORY: astro-ph.CO
-          ARXIV_WINDOW_DAYS: "10"
+          ARXIV_WINDOW_DAYS: "20"
         run: python fetch_arxiv.py
 
       - name: Show summary
