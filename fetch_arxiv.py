@@ -1,36 +1,44 @@
 #!/usr/bin/env python3
 """
-Fetch recent astro-ph.CO submissions from the arXiv API and merge them into a
-durable JSON feed.
+Build a durable JSON feed of recent astro-ph.CO papers.
 
-Dependency-free: standard library only, so the GitHub Action needs no pip step.
+Standard library only, so the GitHub Action needs no pip step.
 
-Design notes, after the first run was rate-limited:
+WHY THERE ARE THREE SOURCES
+---------------------------
+The arXiv API refuses requests from GitHub-hosted runners: two runs twenty
+minutes apart returned 429 on the very first request, then 503, despite a
+single request per run and full Retry-After compliance. GitHub runners sit on
+shared cloud address space, so the throttle is earned by other traffic on the
+same IP. arXiv's terms forbid spreading requests across machines to evade a
+limit, so there is deliberately no proxy or IP-rotation path here. The answer
+is to ask a different, lighter door: the RSS feed, which is one small request
+per day and is what syndication is for.
 
-* One request, not four. A 20-day window of astro-ph.CO is roughly 350-450
-  records, and the arXiv API accepts max_results up to 2000, so the whole
-  window normally arrives in a single call. Paging is kept only as a fallback
-  when arXiv reports more results than one page returned, and it waits the
-  required 3 seconds between calls.
-* HTTPS directly. The previous version used http:// and ate a 302 redirect on
-  every call, doubling the request count for no reason.
-* Rate limiting is respected, not worked around. On 429 the script honours the
-  Retry-After header when present, otherwise backs off 60s, 180s, 420s. arXiv's
-  terms forbid spreading requests across machines to evade limits, so there is
-  deliberately no proxy or retry-elsewhere path here.
-* The feed is merged, not overwritten. Records are keyed by arXiv id and kept
-  for RETAIN_DAYS. A failed run therefore loses nothing, and a run after an
-  outage backfills. The previous version rewrote the file each time, so any
-  paper older than the window was gone forever.
-* On total failure the existing feed file is left untouched and the script
-  exits non-zero. A red build means "no new data", never "corrupted data".
+Sources are tried in order and their results are MERGED, so partial coverage
+from one is topped up by another:
 
-arXiv API docs:  https://info.arxiv.org/help/api/user-manual.html
+  arxiv-rss  one request. Complete for the day just announced, nothing older.
+  inspire    windowed and good for backfill, but indexes only the HEP-relevant
+             slice of astro-ph.CO, so roughly 60-75% of the category.
+  arxiv-api  complete and windowed, but blocked from GitHub runners. OFF by
+             default; set ARXIV_TRY_API=1 to attempt it (useful if you ever run
+             this from a machine arXiv will talk to).
+
+A source that raises, or returns nothing, is logged and skipped. The run fails
+only if every source yields nothing, and in that case the existing feed file is
+left untouched. A red build means "no new data", never "corrupted data".
+
+Records are merged by arXiv id into a rolling archive retained for RETAIN_DAYS,
+so a failed day loses nothing and coverage improves over successive runs.
+
+arXiv RSS help:  https://info.arxiv.org/help/rss.html
 arXiv API terms: https://info.arxiv.org/help/api/tou.html
 """
 
 import json
 import os
+import re
 import sys
 import time
 import urllib.error
@@ -38,41 +46,52 @@ import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
+from email.utils import parsedate_to_datetime
 
-API = "https://export.arxiv.org/api/query"
 CATEGORY = os.environ.get("ARXIV_CATEGORY", "astro-ph.CO")
 WINDOW_DAYS = int(os.environ.get("ARXIV_WINDOW_DAYS", "20"))
 RETAIN_DAYS = int(os.environ.get("ARXIV_RETAIN_DAYS", "45"))
-PAGE_SIZE = int(os.environ.get("ARXIV_PAGE_SIZE", "600"))
-MAX_RECORDS = int(os.environ.get("ARXIV_MAX_RECORDS", "2000"))
 OUT_PATH = os.environ.get("ARXIV_OUT", f"feed/{CATEGORY}.json")
+TRY_API = os.environ.get("ARXIV_TRY_API", "0") == "1"
 REQUEST_GAP = float(os.environ.get("ARXIV_REQUEST_GAP", "3"))
 BACKOFF = [60, 180, 420]
 USER_AGENT = os.environ.get(
     "ARXIV_USER_AGENT",
-    "arxiv-daily-digest/2.0 (+https://github.com/adam-gomulka/arxiv-fetch)",
+    "arxiv-daily-digest/3.0 (+https://github.com/adam-gomulka/arxiv-fetch)",
 )
 
-NS = {
-    "atom": "http://www.w3.org/2005/Atom",
-    "arxiv": "http://arxiv.org/schemas/atom",
-    "opensearch": "http://a9.com/-/spec/opensearch/1.1/",
-}
+RSS_URL = f"https://rss.arxiv.org/rss/{CATEGORY}"
+INSPIRE_URL = "https://inspirehep.net/api/literature"
+API_URL = "https://export.arxiv.org/api/query"
+
+ARXIV_ID_RE = re.compile(r"(\d{4}\.\d{4,5})(?:v(\d+))?")
 
 
 def log(msg):
     print(msg, file=sys.stderr, flush=True)
 
 
-def build_query(start_dt, end_dt):
-    """arXiv date-range syntax is submittedDate:[YYYYMMDDHHMM TO YYYYMMDDHHMM]."""
-    lo = start_dt.strftime("%Y%m%d%H%M")
-    hi = end_dt.strftime("%Y%m%d%H%M")
-    return f"cat:{CATEGORY} AND submittedDate:[{lo} TO {hi}]"
+def localname(tag):
+    """'{http://purl.org/dc/elements/1.1/}creator' -> 'creator'."""
+    return tag.rsplit("}", 1)[-1] if "}" in tag else tag
+
+
+def child_text(node, name):
+    for kid in node:
+        if localname(kid.tag) == name:
+            return " ".join((kid.text or "").split())
+    return ""
+
+
+def children_text(node, name):
+    out = []
+    for kid in node:
+        if localname(kid.tag) == name:
+            out.append(" ".join((kid.text or "").split()))
+    return out
 
 
 def retry_after_seconds(exc, default):
-    """Honour Retry-After when arXiv sends one; it may be seconds or a date."""
     try:
         raw = exc.headers.get("Retry-After")
     except Exception:  # noqa: BLE001
@@ -83,104 +102,279 @@ def retry_after_seconds(exc, default):
     if raw.isdigit():
         return min(int(raw), 900)
     try:
-        from email.utils import parsedate_to_datetime
         when = parsedate_to_datetime(raw)
-        delta = (when - datetime.now(timezone.utc)).total_seconds()
-        return max(1, min(int(delta), 900))
+        return max(1, min(int((when - datetime.now(timezone.utc)).total_seconds()), 900))
     except Exception:  # noqa: BLE001
         return default
 
 
-def fetch_page(query, start, page_size, _sleep=time.sleep):
-    params = {
-        "search_query": query,
-        "start": str(start),
-        "max_results": str(page_size),
-        "sortBy": "submittedDate",
-        "sortOrder": "descending",
-    }
-    url = f"{API}?{urllib.parse.urlencode(params)}"
-    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-
-    waits = list(BACKOFF)          # local copy: never mutate module state
+def http_get(url, backoff=None, _sleep=time.sleep, timeout=120):
+    """GET with polite retry. Honours Retry-After; never routes around a limit."""
+    waits = list(BACKOFF if backoff is None else backoff)
     attempts = len(waits) + 1
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
 
     for i in range(attempts):
         if i > 0:
-            log(f"  backing off {waits[i - 1]}s before attempt {i + 1}")
+            log(f"    backing off {waits[i - 1]}s before attempt {i + 1}")
             _sleep(waits[i - 1])
         last = i == attempts - 1
         try:
-            with urllib.request.urlopen(req, timeout=120) as resp:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
                 return resp.read()
         except urllib.error.HTTPError as exc:
             if exc.code == 429 and not last:
-                # Retry-After, when arXiv sends one, overrides our schedule.
                 waits[i] = retry_after_seconds(exc, waits[i])
-                log(f"  429 Too Many Requests (attempt {i + 1}); next wait {waits[i]}s")
+                log(f"    429 Too Many Requests (attempt {i + 1}); next wait {waits[i]}s")
                 continue
             if 500 <= exc.code < 600 and not last:
-                log(f"  HTTP {exc.code} (attempt {i + 1})")
+                log(f"    HTTP {exc.code} (attempt {i + 1})")
                 continue
             raise
         except Exception as exc:  # noqa: BLE001
             if last:
                 raise
-            log(f"  request failed: {exc} (attempt {i + 1})")
+            log(f"    request failed: {exc} (attempt {i + 1})")
             continue
     raise RuntimeError("unreachable")
 
 
-def text_of(entry, path):
-    node = entry.find(path, NS)
-    if node is None or node.text is None:
-        return ""
-    return " ".join(node.text.split())
+def blank_record(arxiv_id, version=""):
+    return {
+        "id": arxiv_id,
+        "version": version,
+        "title": "",
+        "authors": [],
+        "abstract": "",
+        "primary_category": "",
+        "categories": [],
+        "cross_listed": False,
+        "announce_type": "",
+        "published": "",
+        "updated": "",
+        "comment": "",
+        "journal_ref": "",
+        "doi": "",
+        "abs_url": f"https://arxiv.org/abs/{arxiv_id}",
+        "pdf_url": f"https://arxiv.org/pdf/{arxiv_id}",
+        "source": "",
+    }
 
 
-def parse_entries(xml_bytes):
+# --------------------------------------------------------------------------
+# Source 1: arXiv RSS
+# --------------------------------------------------------------------------
+
+def parse_rss(xml_bytes):
     root = ET.fromstring(xml_bytes)
-    total_node = root.find("opensearch:totalResults", NS)
-    total = int(total_node.text) if total_node is not None and total_node.text else None
-
     records = []
-    for entry in root.findall("atom:entry", NS):
-        raw_id = text_of(entry, "atom:id")
-        arxiv_id = raw_id.rsplit("/abs/", 1)[-1] if "/abs/" in raw_id else raw_id
-        version = ""
-        if "v" in arxiv_id.rsplit(".", 1)[-1]:
-            arxiv_id, _, version = arxiv_id.partition("v")
+    for item in root.iter():
+        if localname(item.tag) != "item":
+            continue
 
-        primary = entry.find("arxiv:primary_category", NS)
-        categories = [c.get("term") for c in entry.findall("atom:category", NS) if c.get("term")]
+        desc = child_text(item, "description")
+        guid = child_text(item, "guid")
+        link = child_text(item, "link")
 
-        pdf = ""
-        for link in entry.findall("atom:link", NS):
-            if link.get("title") == "pdf":
-                pdf = link.get("href", "")
+        match = ARXIV_ID_RE.search(desc) or ARXIV_ID_RE.search(guid) or ARXIV_ID_RE.search(link)
+        if not match:
+            continue
+        arxiv_id, version = match.group(1), match.group(2) or ""
 
-        records.append({
-            "id": arxiv_id,
-            "version": version,
-            "title": text_of(entry, "atom:title"),
-            "authors": [
-                " ".join((a.findtext("atom:name", default="", namespaces=NS) or "").split())
-                for a in entry.findall("atom:author", NS)
-            ],
-            "abstract": text_of(entry, "atom:summary"),
-            "primary_category": primary.get("term") if primary is not None else "",
-            "categories": categories,
-            "cross_listed": bool(primary is not None and primary.get("term") != CATEGORY),
-            "published": text_of(entry, "atom:published"),
-            "updated": text_of(entry, "atom:updated"),
-            "comment": text_of(entry, "arxiv:comment"),
-            "journal_ref": text_of(entry, "arxiv:journal_ref"),
-            "doi": text_of(entry, "arxiv:doi"),
-            "abs_url": f"https://arxiv.org/abs/{arxiv_id}",
-            "pdf_url": pdf,
-        })
+        rec = blank_record(arxiv_id, version)
+
+        title = child_text(item, "title")
+        # Defensive: older feeds appended "(arXiv:XXXX.XXXXX [cat])" to titles.
+        rec["title"] = re.sub(r"\s*\(arXiv:\S+\s*\[[^\]]+\]\)\s*$", "", title).strip()
+
+        abstract = desc
+        if "Abstract:" in desc:
+            abstract = desc.split("Abstract:", 1)[1]
+        rec["abstract"] = abstract.strip()
+
+        creators = child_text(item, "creator")
+        rec["authors"] = [a.strip() for a in creators.split(",") if a.strip()]
+
+        cats = children_text(item, "category")
+        rec["categories"] = cats
+        rec["primary_category"] = cats[0] if cats else ""
+
+        announce = child_text(item, "announce_type").lower()
+        if not announce:
+            m = re.search(r"Announce Type:\s*([\w-]+)", desc)
+            announce = m.group(1).lower() if m else ""
+        rec["announce_type"] = announce
+        rec["cross_listed"] = announce.startswith("cross")
+
+        pub = child_text(item, "pubDate")
+        if pub:
+            try:
+                rec["published"] = (
+                    parsedate_to_datetime(pub)
+                    .astimezone(timezone.utc)
+                    .strftime("%Y-%m-%dT%H:%M:%SZ")
+                )
+            except Exception:  # noqa: BLE001
+                pass
+        rec["updated"] = rec["published"]
+        rec["source"] = "arxiv-rss"
+        records.append(rec)
+    return records
+
+
+def source_rss(_now):
+    log(f"  GET {RSS_URL}")
+    return parse_rss(http_get(RSS_URL))
+
+
+# --------------------------------------------------------------------------
+# Source 2: INSPIRE-HEP
+# --------------------------------------------------------------------------
+
+def parse_inspire(payload):
+    data = json.loads(payload)
+    hits = (data.get("hits") or {}).get("hits") or []
+    total = (data.get("hits") or {}).get("total")
+    records = []
+
+    for hit in hits:
+        meta = hit.get("metadata") or {}
+        eprints = meta.get("arxiv_eprints") or []
+        if not eprints:
+            continue
+        raw = (eprints[0].get("value") or "").strip()
+        match = ARXIV_ID_RE.search(raw)
+        if not match:
+            continue
+        rec = blank_record(match.group(1), match.group(2) or "")
+
+        titles = meta.get("titles") or []
+        rec["title"] = " ".join((titles[0].get("title") or "").split()) if titles else ""
+
+        abstracts = meta.get("abstracts") or []
+        rec["abstract"] = (
+            " ".join((abstracts[0].get("value") or "").split()) if abstracts else ""
+        )
+
+        rec["authors"] = [
+            a.get("full_name", "") for a in (meta.get("authors") or []) if a.get("full_name")
+        ]
+
+        cats = eprints[0].get("categories") or []
+        rec["categories"] = cats
+        rec["primary_category"] = cats[0] if cats else ""
+        rec["cross_listed"] = bool(cats) and cats[0] != CATEGORY
+
+        date = meta.get("earliest_date") or ""
+        if re.fullmatch(r"\d{4}-\d{2}-\d{2}", date):
+            rec["published"] = f"{date}T00:00:00Z"
+        rec["updated"] = rec["published"]
+
+        dois = meta.get("dois") or []
+        rec["doi"] = dois[0].get("value", "") if dois else ""
+        rec["source"] = "inspire"
+        records.append(rec)
+
     return records, total
 
+
+def source_inspire(now):
+    start = (now - timedelta(days=WINDOW_DAYS)).strftime("%Y-%m-%d")
+    end = now.strftime("%Y-%m-%d")
+    query = f"arxiv_eprints.categories:{CATEGORY} and de {start}->{end}"
+    records, page = [], 1
+
+    while page <= 10:
+        params = {
+            "sort": "mostrecent",
+            "size": "200",
+            "page": str(page),
+            "q": query,
+            "fields": "titles,abstracts,arxiv_eprints,authors,earliest_date,dois",
+        }
+        url = f"{INSPIRE_URL}?{urllib.parse.urlencode(params)}"
+        log(f"  GET inspire page {page}")
+        batch, total = parse_inspire(http_get(url))
+        if not batch:
+            break
+        records.extend(batch)
+        if total is not None and len(records) >= total:
+            break
+        if len(batch) < 200:
+            break
+        page += 1
+        time.sleep(REQUEST_GAP)
+
+    return records
+
+
+# --------------------------------------------------------------------------
+# Source 3: arXiv API (opt-in; blocked from GitHub runners)
+# --------------------------------------------------------------------------
+
+def parse_api(xml_bytes):
+    root = ET.fromstring(xml_bytes)
+    records = []
+    for entry in root.iter():
+        if localname(entry.tag) != "entry":
+            continue
+        raw_id = child_text(entry, "id")
+        match = ARXIV_ID_RE.search(raw_id)
+        if not match:
+            continue
+        rec = blank_record(match.group(1), match.group(2) or "")
+        rec["title"] = child_text(entry, "title")
+        rec["abstract"] = child_text(entry, "summary")
+        rec["published"] = child_text(entry, "published")
+        rec["updated"] = child_text(entry, "updated")
+        rec["comment"] = child_text(entry, "comment")
+        rec["journal_ref"] = child_text(entry, "journal_ref")
+        rec["doi"] = child_text(entry, "doi")
+
+        authors = []
+        for kid in entry:
+            if localname(kid.tag) == "author":
+                authors.append(child_text(kid, "name"))
+        rec["authors"] = [a for a in authors if a]
+
+        cats, primary = [], ""
+        for kid in entry:
+            name = localname(kid.tag)
+            if name == "category" and kid.get("term"):
+                cats.append(kid.get("term"))
+            elif name == "primary_category" and kid.get("term"):
+                primary = kid.get("term")
+        rec["categories"] = cats
+        rec["primary_category"] = primary or (cats[0] if cats else "")
+        rec["cross_listed"] = bool(primary) and primary != CATEGORY
+        rec["source"] = "arxiv-api"
+        records.append(rec)
+    return records
+
+
+def source_api(now):
+    lo = (now - timedelta(days=WINDOW_DAYS)).strftime("%Y%m%d%H%M")
+    hi = now.strftime("%Y%m%d%H%M")
+    params = {
+        "search_query": f"cat:{CATEGORY} AND submittedDate:[{lo} TO {hi}]",
+        "start": "0",
+        "max_results": "600",
+        "sortBy": "submittedDate",
+        "sortOrder": "descending",
+    }
+    url = f"{API_URL}?{urllib.parse.urlencode(params)}"
+    log("  GET arxiv api")
+    return parse_api(http_get(url))
+
+
+SOURCES = [("arxiv-rss", source_rss), ("inspire", source_inspire)]
+if TRY_API:
+    SOURCES.append(("arxiv-api", source_api))
+
+
+# --------------------------------------------------------------------------
+# Archive handling
+# --------------------------------------------------------------------------
 
 def load_existing(path):
     try:
@@ -191,14 +385,28 @@ def load_existing(path):
     return {r["id"]: r for r in data.get("records", []) if r.get("id")}
 
 
+def better(new, old):
+    """Prefer the record carrying more usable content."""
+    def score(r):
+        return (
+            bool(r.get("abstract")),
+            bool(r.get("authors")),
+            len(r.get("abstract") or ""),
+            len(r.get("categories") or []),
+        )
+    return new if score(new) > score(old) else old
+
+
 def merge(existing, fetched):
-    """Newly fetched records win; anything previously stored is preserved."""
     merged = dict(existing)
     added = 0
     for rec in fetched:
-        if rec["id"] not in merged:
+        rid = rec["id"]
+        if rid in merged:
+            merged[rid] = better(rec, merged[rid])
+        else:
+            merged[rid] = rec
             added += 1
-        merged[rec["id"]] = rec
     return merged, added
 
 
@@ -210,7 +418,7 @@ def prune(records, now, retain_days):
         try:
             when = datetime.strptime(stamp, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
         except ValueError:
-            kept.append(rec)  # unparseable date: keep rather than silently discard
+            kept.append(rec)  # unparseable: keep rather than silently discard
             continue
         if when >= cutoff:
             kept.append(rec)
@@ -219,78 +427,44 @@ def prune(records, now, retain_days):
     return kept, dropped
 
 
-def collect(query, now):
-    fetched, seen = [], set()
-    start = 0
-    expected_total = None
-
-    while start < MAX_RECORDS:
-        log(f"  requesting {start}..{start + PAGE_SIZE}")
-        page, total = parse_entries(fetch_page(query, start, PAGE_SIZE))
-        if expected_total is None:
-            expected_total = total
-            log(f"  arXiv reports {total} total results for the window")
-        if not page:
-            break
-        new_this_page = 0
-        for rec in page:
-            if rec["id"] not in seen:
-                seen.add(rec["id"])
-                fetched.append(rec)
-                new_this_page += 1
-        if new_this_page == 0:
-            # Overlapping or repeated pages: without this the loop can spin
-            # MAX_RECORDS/PAGE_SIZE times, sleeping 3s each, making no progress.
-            log("  page added no new records; stopping to avoid a no-progress loop")
-            break
-        if expected_total is not None and len(fetched) >= min(expected_total, MAX_RECORDS):
-            break
-        if len(page) < PAGE_SIZE:
-            break
-        start += PAGE_SIZE
-        log(f"  window needs another page; waiting {REQUEST_GAP}s")
-        time.sleep(REQUEST_GAP)
-
-    return fetched, expected_total
-
-
 def main():
     now = datetime.now(timezone.utc)
-    start_dt = now - timedelta(days=WINDOW_DAYS)
-    query = build_query(start_dt, now)
-    log(f"query: {query}")
-
     existing = load_existing(OUT_PATH)
     log(f"existing feed holds {len(existing)} records")
 
-    try:
-        fetched, expected_total = collect(query, now)
-    except Exception as exc:  # noqa: BLE001
-        log(f"FATAL: arXiv fetch failed: {exc}")
-        log("existing feed left untouched; exiting non-zero")
+    fetched, report = [], {}
+    for name, fn in SOURCES:
+        log(f"source {name}:")
+        try:
+            got = fn(now)
+        except Exception as exc:  # noqa: BLE001
+            log(f"  FAILED: {exc}")
+            report[name] = {"ok": False, "records": 0, "error": str(exc)[:200]}
+            continue
+        log(f"  got {len(got)} records")
+        report[name] = {"ok": bool(got), "records": len(got)}
+        if not got:
+            report[name]["error"] = "returned no records"
+        fetched.extend(got)
+
+    if not fetched:
+        log("FATAL: every source returned nothing; existing feed left untouched")
         return 1
 
     merged_map, added = merge(existing, fetched)
     records = sorted(merged_map.values(), key=lambda r: r.get("published", ""), reverse=True)
     records, dropped = prune(records, now, RETAIN_DAYS)
 
-    window_complete = (
-        expected_total is None or len(fetched) >= min(expected_total, MAX_RECORDS)
-    )
-
     payload = {
         "generated_at": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "source": "arxiv-api",
         "category": CATEGORY,
-        "window_start": start_dt.strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "window_end": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "sources": report,
+        "sources_ok": [n for n, r in report.items() if r["ok"]],
         "window_days": WINDOW_DAYS,
         "retain_days": RETAIN_DAYS,
         "fetched_this_run": len(fetched),
         "added_this_run": added,
         "pruned_this_run": dropped,
-        "reported_total_for_window": expected_total,
-        "window_complete": window_complete,
         "record_count": len(records),
         "oldest_retained": records[-1]["published"] if records else None,
         "newest_retained": records[0]["published"] if records else None,
@@ -304,11 +478,9 @@ def main():
 
     log(
         f"wrote {OUT_PATH}: {len(records)} retained "
-        f"({len(fetched)} fetched, {added} new, {dropped} pruned), "
-        f"window_complete={window_complete}"
+        f"({len(fetched)} fetched, {added} new, {dropped} pruned) "
+        f"via {payload['sources_ok']}"
     )
-    if not window_complete:
-        log("WARNING: fetched fewer records than arXiv reported for the window")
     return 0
 
 
