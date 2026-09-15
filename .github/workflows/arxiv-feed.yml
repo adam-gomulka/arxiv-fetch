@@ -2,12 +2,13 @@ name: arXiv astro-ph.CO feed
 
 on:
   schedule:
-    # 02:00 UTC daily. arXiv announces at 20:00 US Eastern (00:00 UTC), so this
-    # runs after the day's announcement has landed. GitHub queues scheduled jobs
-    # on a best-effort basis and they can be delayed by 10-30 minutes at busy
-    # times; the fetch uses a 10-day rolling window, so a late or skipped run
-    # loses nothing.
-    - cron: "0 2 * * *"
+    # 02:40 UTC daily. arXiv announces at 20:00 US Eastern (00:00 UTC), so this
+    # runs well after the day's announcement. The offset minute is deliberate:
+    # on-the-hour crons are the busiest slots on shared runners, and the whole
+    # problem here is contention on shared IPs. GitHub queues scheduled jobs
+    # best-effort and they can be delayed; the 20-day window plus the merged
+    # archive means a late or skipped run costs nothing.
+    - cron: "40 2 * * *"
   workflow_dispatch: {}
 
 permissions:
@@ -20,6 +21,8 @@ concurrency:
 jobs:
   fetch:
     runs-on: ubuntu-latest
+    # A single 429 backoff cycle can wait up to ~11 minutes before giving up.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -31,6 +34,7 @@ jobs:
         env:
           ARXIV_CATEGORY: astro-ph.CO
           ARXIV_WINDOW_DAYS: "20"
+          ARXIV_RETAIN_DAYS: "45"
         run: python fetch_arxiv.py
 
       - name: Show summary
@@ -38,8 +42,12 @@ jobs:
           python - <<'PY'
           import json
           d = json.load(open("feed/astro-ph.CO.json"))
-          print(f"{d['record_count']} records, complete={d['complete']}, "
-                f"window {d['window_start']} to {d['window_end']}")
+          print(f"{d['record_count']} retained "
+                f"({d['fetched_this_run']} fetched, {d['added_this_run']} new, "
+                f"{d['pruned_this_run']} pruned)")
+          print(f"window {d['window_start']} -> {d['window_end']}, "
+                f"complete={d['window_complete']}")
+          print(f"retained span {d['oldest_retained']} -> {d['newest_retained']}")
           PY
 
       - name: Commit if changed
