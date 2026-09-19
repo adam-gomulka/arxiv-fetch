@@ -1,24 +1,24 @@
 {
- "generated_at": "2026-09-18T10:02:22Z",
+ "generated_at": "2026-09-19T09:42:34Z",
  "category": "astro-ph.CO",
  "sources": {
   "arxiv-rss": {
-   "ok": true,
-   "records": 42
+   "ok": false,
+   "records": 0,
+   "error": "returned no records"
   },
   "inspire": {
    "ok": true,
-   "records": 301
+   "records": 298
   }
  },
  "sources_ok": [
-  "arxiv-rss",
   "inspire"
  ],
  "window_days": 20,
  "retain_days": 45,
- "fetched_this_run": 343,
- "added_this_run": 41,
+ "fetched_this_run": 298,
+ "added_this_run": 0,
  "pruned_this_run": 0,
  "record_count": 422,
  "oldest_retained": "2026-08-26T00:00:00Z",
