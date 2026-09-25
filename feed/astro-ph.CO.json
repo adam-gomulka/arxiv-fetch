@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-25T08:11:44Z",
+ "generated_at": "2026-09-25T10:32:28Z",
  "category": "astro-ph.CO",
  "sources": {
   "arxiv-rss": {
@@ -18,7 +18,7 @@
  "window_days": 20,
  "retain_days": 45,
  "fetched_this_run": 357,
- "added_this_run": 34,
+ "added_this_run": 0,
  "pruned_this_run": 0,
  "record_count": 616,
  "oldest_retained": "2026-08-26T00:00:00Z",
