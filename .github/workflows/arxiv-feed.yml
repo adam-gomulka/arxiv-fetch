@@ -7,7 +7,7 @@ on:
     # in winter. Running at 05:40 clears the rebuild year-round; the earlier
     # 02:40 slot would have read the previous day's feed every time. The odd
     # minute avoids the on-the-hour crush on shared runners.
-    - cron: "40 2 * * *"
+    - cron: "20 0 * * *"
   workflow_dispatch: {}
 
 permissions:
