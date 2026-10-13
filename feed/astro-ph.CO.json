@@ -1,27 +1,27 @@
 {
- "generated_at": "2026-10-12T06:00:52Z",
+ "generated_at": "2026-10-13T06:48:40Z",
  "category": "astro-ph.CO",
  "sources": {
   "arxiv-rss": {
-   "ok": true,
-   "records": 38
+   "ok": false,
+   "records": 0,
+   "error": "returned no records"
   },
   "inspire": {
    "ok": true,
-   "records": 294
+   "records": 275
   }
  },
  "sources_ok": [
-  "arxiv-rss",
   "inspire"
  ],
  "window_days": 20,
  "retain_days": 45,
- "fetched_this_run": 332,
- "added_this_run": 33,
- "pruned_this_run": 20,
- "record_count": 955,
- "oldest_retained": "2026-08-29T00:00:00Z",
+ "fetched_this_run": 275,
+ "added_this_run": 0,
+ "pruned_this_run": 2,
+ "record_count": 953,
+ "oldest_retained": "2026-08-30T00:00:00Z",
  "newest_retained": "2026-10-12T04:00:00Z",
  "records": [
   {
@@ -42817,57 +42817,6 @@
    "doi": "",
    "abs_url": "https://arxiv.org/abs/2608.30079",
    "pdf_url": "https://arxiv.org/pdf/2608.30079",
-   "source": "inspire"
-  },
-  {
-   "id": "2608.29244",
-   "version": "",
-   "title": "The onset of the strong backreaction regime in axion inflation, an analytical study",
-   "authors": [
-    "Kulkarni, Aditya",
-    "Sorbo, Lorenzo"
-   ],
-   "abstract": "Models where an axion-like inflaton is coupled to a $U(1)$ gauge field are theoretically well motivated and can display a rich phenomenology. The regime in which the quanta of the gauge field strongly backreact on the rolling inflaton has been studied for well more than a decade, and yet we cannot say that it is fully understood. In this paper we present an analytical study of the onset of the strong backreaction regime. Our formalism relies on a Laplace transform to convert a complicated integro-differential equation into the search of the poles of an analytic function. We confirm the existence, previously observed using a completely different formalism, of a stable region of strong backreaction. Our work provides, for the first time, analytical formulae that allow to study the evolution of the system as it transitions from the weak to the strong backreaction regime.",
-   "primary_category": "astro-ph.CO",
-   "categories": [
-    "astro-ph.CO",
-    "hep-ph",
-    "hep-th"
-   ],
-   "cross_listed": false,
-   "announce_type": "",
-   "published": "2026-08-29T00:00:00Z",
-   "updated": "2026-08-29T00:00:00Z",
-   "comment": "",
-   "journal_ref": "",
-   "doi": "",
-   "abs_url": "https://arxiv.org/abs/2608.29244",
-   "pdf_url": "https://arxiv.org/pdf/2608.29244",
-   "source": "inspire"
-  },
-  {
-   "id": "2608.29466",
-   "version": "",
-   "title": "How much of the black hole ringdown is sourced within the light ring?",
-   "authors": [
-    "Cheung, Mark Ho-Yeuk"
-   ],
-   "abstract": "Not much. It has been proposed that applying a rational filter to a black hole ringdown gravitational waveform reveals a direct wave component sourced near the event horizon. By solving the Teukolsky equation for a point particle plunging into a Kerr black hole, I show that the maximum amplitude of the waves sourced within the prograde light ring is $\\lesssim 10\\%$ that of those sourced by the full trajectory no matter if the waves are filtered or not. This agrees with the interpretation of quasinormal modes as waves orbiting the light ring and the direct wave as the power of these modes redistributed in time. Therefore, both quasinormal modes and direct waves are more a probe of the light ring than the near-horizon region. For GW250114, I estimate that the component of the waves sourced within the light ring have a signal-to-noise ratio $ρ\\lesssim 1$ measured after the peak of the filtered waves.",
-   "primary_category": "gr-qc",
-   "categories": [
-    "gr-qc",
-    "astro-ph.CO",
-    "astro-ph.HE"
-   ],
-   "cross_listed": true,
-   "announce_type": "",
-   "published": "2026-08-29T00:00:00Z",
-   "updated": "2026-08-29T00:00:00Z",
-   "comment": "",
-   "journal_ref": "",
-   "doi": "",
-   "abs_url": "https://arxiv.org/abs/2608.29466",
-   "pdf_url": "https://arxiv.org/pdf/2608.29466",
    "source": "inspire"
   }
  ]
