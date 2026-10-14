@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-13T11:25:18Z",
+ "generated_at": "2026-10-14T04:56:06Z",
  "category": "astro-ph.CO",
  "sources": {
   "arxiv-rss": {
@@ -9,7 +9,7 @@
   },
   "inspire": {
    "ok": true,
-   "records": 275
+   "records": 257
   }
  },
  "sources_ok": [
@@ -17,11 +17,11 @@
  ],
  "window_days": 20,
  "retain_days": 45,
- "fetched_this_run": 275,
+ "fetched_this_run": 257,
  "added_this_run": 0,
- "pruned_this_run": 0,
- "record_count": 953,
- "oldest_retained": "2026-08-30T00:00:00Z",
+ "pruned_this_run": 5,
+ "record_count": 948,
+ "oldest_retained": "2026-08-31T00:00:00Z",
  "newest_retained": "2026-10-12T04:00:00Z",
  "records": [
   {
@@ -42673,150 +42673,6 @@
    "doi": "10.1038/s41550-026-02954-y",
    "abs_url": "https://arxiv.org/abs/2608.31161",
    "pdf_url": "https://arxiv.org/pdf/2608.31161",
-   "source": "inspire"
-  },
-  {
-   "id": "2608.29727",
-   "version": "",
-   "title": "Primordial Black Hole Seeds for Little Red Dots in $f(R)$ Gravity",
-   "authors": [
-    "Fakhry, Saeed"
-   ],
-   "abstract": "The discovery by the James Webb Space Telescope (JWST) of an abundant population of compact little red dots (LRDs) and supermassive black holes at high redshifts poses a severe timing challenge for standard Eddington-limited growth from stellar remnants. In this work, we present a unified hybrid assembly framework in which intermediate-mass seed black holes are formed via hierarchical primordial black hole (PBH) mergers within dense clusters in Hu-Sawicki $f(R)$ gravity, followed by galactic gas accretion. We demonstrate that the screened $f(R)$ fifth force nonlinearly accelerates early seed formation through a quadratic enhancement of the gravitational-wave radiation-capture kernel, while environmental chameleon screening dynamically self-regulates the growth. Because subsequent gas accretion scales multiplicatively with seed mass, the $f(R)$ seed enhancement is preserved throughout the accretion history, drastically reducing the time-averaged Eddington ratios required to assemble $10^{6}\\text{-}10^{9}\\,M_{\\odot}$ LRDs by cosmic dawn. Confronting our active mass functions with JWST data reveals that a small clustered PBH fraction ($f_{\\rm PBH} \\lesssim 10^{-3}$) under a realistic active galactic nucleus duty cycle ($δ\\approx 10^{-2}$) naturally matches observed LRD space densities at $z \\sim 5.5\\text{-}6.5$ while remaining fully compliant with LIGO-Virgo-KAGRA limits, with modified gravity naturally driving the high-mass tail. Finally, we show that parameter degeneracies between modified gravity and cluster density can be cleanly broken by combining three multi-messenger diagnostics: remnant spin state signatures, a stochastic GW background cutoff, and a scale-dependent inversion in the PBH spatial correlation function.",
-   "primary_category": "astro-ph.GA",
-   "categories": [
-    "astro-ph.GA",
-    "astro-ph.CO",
-    "gr-qc"
-   ],
-   "cross_listed": true,
-   "announce_type": "",
-   "published": "2026-08-30T00:00:00Z",
-   "updated": "2026-08-30T00:00:00Z",
-   "comment": "",
-   "journal_ref": "",
-   "doi": "",
-   "abs_url": "https://arxiv.org/abs/2608.29727",
-   "pdf_url": "https://arxiv.org/pdf/2608.29727",
-   "source": "inspire"
-  },
-  {
-   "id": "2608.29687",
-   "version": "",
-   "title": "Spheroidal Resampling Analysis of High-Redshift Gamma-Ray Burst Spatial Densities",
-   "authors": [
-    "Horvath, Istvan",
-    "Bagoly, Zsolt",
-    "Balazs, Lajos G.",
-    "Hakkila, Jon",
-    "Horvath, Janos",
-    "Pinter, Sandor",
-    "Racz, Istvan I.",
-    "Veres, Peter",
-    "Koncz, Bendeguz"
-   ],
-   "abstract": "Gamma-ray bursts (GRBs) are bright transient sources that can be observed at high redshift. They can therefore be used as tracers of the distant large-scale structure, although the GRB redshift sample is sparse and affected by strong selection effects. We analyze the three-dimensional distribution of 542 GRBs with spectroscopic redshifts. The method extends our earlier spherical-window search by replacing spherical counting volumes with axisymmetric spheroids. The angular positions of the observed GRBs are kept fixed in the Monte-Carlo null samples, while the redshifts are shuffled within each Galactic hemisphere. In the Northern Galactic hemisphere, the overdensity associated with the Hercules--Corona Borealis Great Wall remains significant for a range of spheroidal shapes. This supports the stability of the previously reported signal and shows that it is not only a consequence of using spherical counting volumes. In the Southern Galactic hemisphere, the same method finds no structure with comparable significance. A small candidate grouping is present, but its significance is only marginal, and it is sensitive to the small number of events. We conclude that spheroidal resampling is a useful check of GRB overdensity searches, but the physical nature of any candidate structure still requires confirmation with independent tracers such as galaxy or quasar samples.",
-   "primary_category": "astro-ph.CO",
-   "categories": [
-    "astro-ph.CO",
-    "astro-ph.HE"
-   ],
-   "cross_listed": false,
-   "announce_type": "",
-   "published": "2026-08-30T00:00:00Z",
-   "updated": "2026-08-30T00:00:00Z",
-   "comment": "",
-   "journal_ref": "",
-   "doi": "10.3390/universe12090264",
-   "abs_url": "https://arxiv.org/abs/2608.29687",
-   "pdf_url": "https://arxiv.org/pdf/2608.29687",
-   "source": "inspire"
-  },
-  {
-   "id": "2608.29801",
-   "version": "",
-   "title": "Seesaw and Axion in No-Scale Gravity",
-   "authors": [
-    "Hell, Anamaria",
-    "da S. Pereira, Lincoln",
-    "Yanagida, Tsutomu T."
-   ],
-   "abstract": "The No-Scale gravity is a compelling framework to describe particle physics, gravity and cosmology, in which all mass scales are an illusion given by the value of a scalar field $ϕ$. This theory, however, falls under the umbrella of more general scalar-tensor theories, which propagate different modes depending on the scalar field, and faces the extensive debate regarding the equivalence between its Jordan and Einstein frame descriptions. In this work we advocate that by excluding the singular point in the transformation between the two frames (e.g., $ϕ=0$) we can have the classical equivalence between them. To show the merit of removing this singular point, we argue the Jordan frame makes the symmetries of the model manifest, which creates a suitable playground for the particle-physics model building which we illustrate by showing the emergence of discrete symmetries which leads to a high-quality axion and also naturally incorporate the seesaw mechanism.",
-   "primary_category": "hep-ph",
-   "categories": [
-    "hep-ph",
-    "astro-ph.CO",
-    "gr-qc"
-   ],
-   "cross_listed": true,
-   "announce_type": "",
-   "published": "2026-08-30T00:00:00Z",
-   "updated": "2026-08-30T00:00:00Z",
-   "comment": "",
-   "journal_ref": "",
-   "doi": "",
-   "abs_url": "https://arxiv.org/abs/2608.29801",
-   "pdf_url": "https://arxiv.org/pdf/2608.29801",
-   "source": "inspire"
-  },
-  {
-   "id": "2608.29893",
-   "version": "",
-   "title": "The Structural Abundance Crisis of Massive Galaxies in Current Cosmological Simulations",
-   "authors": [
-    "Yesuf, Hassen M.",
-    "Bottrell, Connor",
-    "Ho, Luis C.",
-    "Robotham, Aaron S.G.",
-    "Bellstedt, Sabine",
-    "Cook, Robin H.W.",
-    "Hao, Lei",
-    "Liu, Fengshan"
-   ],
-   "abstract": "The internal structure of galaxies encodes the complex baryon cycle driven by gas accretion, star formation, and feedback, together with secular evolution and environmentally driven processes such as mergers and tidal interactions. We present a population-level census of massive nearby galaxies ($\\log(M_\\star/M_\\odot) > 10$) by comparing Hyper Suprime-Cam Subaru Strategic Program observations with matched mock images from IllustrisTNG, EAGLE, and SIMBA. Using a consistent, like-for-like imaging pipeline, we construct structural abundance functions (SAFs) for key morphological parameters, revealing a structural abundance crisis. Across Sérsic index, concentration, size, and ellipticity, all simulations exhibit large, systematic discrepancies ($>5σ$; RMSE $\\sim 0.2$--$1.8$ dex), typically corresponding to abundance differences of factors of several. While individual simulations display diverse failures---underproducing or overproducing compact spheroids, extended or round galaxies ---all underproduce highly flattened disks. Although TNG shows the closest agreement and SIMBA the largest offsets, this shared failure indicates that current models---despite matching global demographics such as the stellar mass function---do not uniquely constrain internal galaxy structure. Our results demonstrate that agreement in integrated observables can mask fundamental shortcomings in the modelling of mass and angular momentum redistribution. We therefore establish SAFs as a stringent, multidimensional, and observationally accessible benchmark for testing and calibrating next-generation galaxy formation models in the era of upcoming deep, wide-field surveys.",
-   "primary_category": "astro-ph.GA",
-   "categories": [
-    "astro-ph.GA",
-    "astro-ph.CO"
-   ],
-   "cross_listed": true,
-   "announce_type": "",
-   "published": "2026-08-30T00:00:00Z",
-   "updated": "2026-08-30T00:00:00Z",
-   "comment": "",
-   "journal_ref": "",
-   "doi": "",
-   "abs_url": "https://arxiv.org/abs/2608.29893",
-   "pdf_url": "https://arxiv.org/pdf/2608.29893",
-   "source": "inspire"
-  },
-  {
-   "id": "2608.30079",
-   "version": "",
-   "title": "Host Dependence and Line-of-Sight Effects on Galaxy-Galaxy Strong Lensing in Clusters",
-   "authors": [
-    "Roche, Cian",
-    "McDonald, Michael",
-    "Natarajan, Priyamvada",
-    "Sharon, Keren",
-    "Dutra, Isaque",
-    "Meneghetti, Massimo",
-    "Vogelsberger, Mark"
-   ],
-   "abstract": "The cross section for galaxy-galaxy strong lensing (GGSL) events in galaxy clusters has repeatedly been found to be higher in observations than in cosmological simulations. We revisit this discrepancy using updated simulation methodology and investigate the dependence of the GGSL probability, $P_{\\rm GGSL}$, on host-cluster lensing properties, baryonic physics, and correlated and uncorrelated line-of-sight structure. We find that correlated material within $\\sim 35$ cMpc of the cluster along the line of sight enhances $P_{\\rm GGSL}$ by a few percent for typical systems and by up to $\\sim15\\%$ for the most efficient lenses. At fixed cluster mass, dark-matter-only simulations yield GGSL probabilities up to an order of magnitude lower than hydrodynamical simulations. We also find a strong dependence on the host-cluster Einstein radius, with an approximate scaling $P_{\\rm GGSL} \\propto θ_{\\rm E}^{2}$. Matching simulated and observed clusters in both mass and Einstein radius seems to reduce the discrepancy relative to previous comparisons. However, our analysis does not clearly resolve the GGSL discrepancy, as the inferred tension depends strongly on the field-of-view definition: square fields are approximately consistent with simulations, while cluster member-bounded fields yield observed probabilities a factor of $\\sim 2-3$ higher. Until observations and simulations share a matched selection function and matched measurement methodology, the residual tension cannot be cleanly attributed to either astrophysics or cosmology.",
-   "primary_category": "astro-ph.CO",
-   "categories": [
-    "astro-ph.CO"
-   ],
-   "cross_listed": false,
-   "announce_type": "",
-   "published": "2026-08-30T00:00:00Z",
-   "updated": "2026-08-30T00:00:00Z",
-   "comment": "",
-   "journal_ref": "",
-   "doi": "",
-   "abs_url": "https://arxiv.org/abs/2608.30079",
-   "pdf_url": "https://arxiv.org/pdf/2608.30079",
    "source": "inspire"
   }
  ]
