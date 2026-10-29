@@ -1,27 +1,27 @@
 {
- "generated_at": "2026-10-28T05:44:51Z",
+ "generated_at": "2026-10-29T05:50:54Z",
  "category": "astro-ph.CO",
  "sources": {
   "arxiv-rss": {
-   "ok": true,
-   "records": 56
+   "ok": false,
+   "records": 0,
+   "error": "returned no records"
   },
   "inspire": {
    "ok": true,
-   "records": 278
+   "records": 295
   }
  },
  "sources_ok": [
-  "arxiv-rss",
   "inspire"
  ],
  "window_days": 20,
  "retain_days": 45,
- "fetched_this_run": 334,
- "added_this_run": 52,
- "pruned_this_run": 0,
- "record_count": 1221,
- "oldest_retained": "2026-09-14T00:00:00Z",
+ "fetched_this_run": 295,
+ "added_this_run": 0,
+ "pruned_this_run": 1,
+ "record_count": 1220,
+ "oldest_retained": "2026-09-15T00:00:00Z",
  "newest_retained": "2026-10-28T04:00:00Z",
  "records": [
   {
@@ -54218,31 +54218,6 @@
    "doi": "10.1103/w3g9-n7cw",
    "abs_url": "https://arxiv.org/abs/2609.18221",
    "pdf_url": "https://arxiv.org/pdf/2609.18221",
-   "source": "inspire"
-  },
-  {
-   "id": "2609.15750",
-   "version": "",
-   "title": "Toward Precision Kinetic Sunyaev-Zel'dovich Cosmology---1. The Matter - Momentum Bispectrum at One-Loop Order",
-   "authors": [
-    "Raikman, Ryan",
-    "Sullivan, James M.",
-    "Ivanov, Mikhail M."
-   ],
-   "abstract": "The kinetic Sunyaev-Zeldovich (kSZ) effect is a sensitive probe of the free-electron momentum field, tapping into spatial correlations relevant for both large-scale cosmology and smaller-scale astrophysics. Precision kSZ measurements will provide a robust channel for constraining inflationary physics and equivalence principle violation, while simultaneously characterizing the small-scale gas distribution and associated baryonic feedback. However, robust kSZ measurement for cosmological applications is challenging, as the primary source of large-scale information is convolved with unknown small-scale dynamics in a degenerate combination. In this paper we address this challenge using the Effective Field Theory (EFT) framework that provides a principled way of treating the effects of small-scale dynamics on large scale-structure. Extracting the kSZ signal can be reformulated as a measurement of the one-loop galaxy-galaxy-electron momentum bispectrum. We compute here a pure dark matter version of this bispectrum in EFT and compare it to simulations. We derive the EFT counterterms that capture small-scale backreaction and find that two of them acquire a transverse direction. One transverse counterterm gets generated entirely by the vorticity of the velocity field. Our computation of the bispectrum dipole agrees with simulation data to $5\\%$ up to $k_{\\rm max}=0.23~iM$, which is significantly larger than the reach of tree level theory, which breaks down beyond k_max = 0.23 h/Mpc and k_max=0.07 h/Mpc (at redshift $z=0.5$). For the bispectrum computed with the projected momentum field, relevant to measuring the kSZ field, we find a similar $k_{\\rm max}$, and make the first detection of the transverse counterterms from simulations. Our results suggest that one-loop bispectrum computations can play an important role in advancing kSZ cosmology.",
-   "primary_category": "astro-ph.CO",
-   "categories": [
-    "astro-ph.CO"
-   ],
-   "cross_listed": false,
-   "announce_type": "",
-   "published": "2026-09-14T00:00:00Z",
-   "updated": "2026-09-14T00:00:00Z",
-   "comment": "",
-   "journal_ref": "",
-   "doi": "",
-   "abs_url": "https://arxiv.org/abs/2609.15750",
-   "pdf_url": "https://arxiv.org/pdf/2609.15750",
    "source": "inspire"
   }
  ]
