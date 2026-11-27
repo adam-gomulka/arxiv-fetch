@@ -1,27 +1,27 @@
 {
- "generated_at": "2026-11-26T08:21:50Z",
+ "generated_at": "2026-11-27T08:37:11Z",
  "category": "astro-ph.CO",
  "sources": {
   "arxiv-rss": {
-   "ok": true,
-   "records": 35
+   "ok": false,
+   "records": 0,
+   "error": "returned no records"
   },
   "inspire": {
    "ok": true,
-   "records": 349
+   "records": 337
   }
  },
  "sources_ok": [
-  "arxiv-rss",
   "inspire"
  ],
  "window_days": 20,
  "retain_days": 45,
- "fetched_this_run": 384,
- "added_this_run": 30,
- "pruned_this_run": 32,
- "record_count": 1154,
- "oldest_retained": "2026-10-13T00:00:00Z",
+ "fetched_this_run": 337,
+ "added_this_run": 0,
+ "pruned_this_run": 1,
+ "record_count": 1153,
+ "oldest_retained": "2026-10-14T04:00:00Z",
  "newest_retained": "2026-11-26T05:00:00Z",
  "records": [
   {
@@ -55051,31 +55051,6 @@
    "abs_url": "https://arxiv.org/abs/2607.26089",
    "pdf_url": "https://arxiv.org/pdf/2607.26089",
    "source": "arxiv-rss"
-  },
-  {
-   "id": "2610.18460",
-   "version": "",
-   "title": "Constraints on the cosmic reheating history from PTA data",
-   "authors": [
-    "Yang, Qi-Lin",
-    "Wang, Shi-Jie",
-    "Li, Nan"
-   ],
-   "abstract": "The cosmic reheating is an important epoch in the very early Universe and has significant impacts on the primordial black hole (PBH) abundance and the scalar-induced gravitational wave (SIGW) spectrum. The relevant energy scale and the constituents of cosmic medium are encoded in the reheating frequency <math display=\"inline\"><msub><mi>f</mi><mi>reh</mi></msub></math> and the equation of state parameter <math display=\"inline\"><mi>w</mi></math>. In this work, we perform a full parameter space Bayesian inference, using the NANOGrav 15-yr dataset to constrain the thermal history of reheating. Treating <math display=\"inline\"><msub><mi>f</mi><mi>reh</mi></msub></math> and <math display=\"inline\"><mi>w</mi></math> as free parameters, we systematically investigate the Dirac <math display=\"inline\"><mi>δ</mi></math>, narrow, and broad log-normal primordial power spectra. Current pulsar timing array data can effectively constrain the peak frequency of the SIGW spectrum as <math display=\"inline\"><msub><mi>f</mi><mi mathvariant=\"normal\">p</mi></msub><mo>∼</mo><msup><mn>10</mn><mrow><mo>-</mo><mn>7.6</mn></mrow></msup><mo>−</mo><msup><mn>10</mn><mrow><mo>-</mo><mn>7.0</mn></mrow></msup><mtext> </mtext><mtext> </mtext><mi>Hz</mi></math>, along with <math display=\"inline\"><msub><mi>f</mi><mrow><mi>reh</mi></mrow></msub><mo>∼</mo><msup><mn>10</mn><mrow><mo>-</mo><mn>9.0</mn></mrow></msup><mo>−</mo><msup><mn>10</mn><mrow><mo>-</mo><mn>8.3</mn></mrow></msup><mtext> </mtext><mtext> </mtext><mi>Hz</mi></math> and <math display=\"inline\"><mi>w</mi><mo>∼</mo><mn>0.19</mn><mi>–</mi><mn>0.79</mn></math> (the 68% confidence level), when the power spectrum has a relatively narrow width <math display=\"inline\"><mi mathvariant=\"normal\">Δ</mi><mo>≲</mo><mn>1</mn></math>. A broader power spectrum introduces a smoothing effect that obscures the characteristic frequency knee in the SIGW spectrum, leading to the loss of information about cosmic reheating. Furthermore, for the Dirac <math display=\"inline\"><mi>δ</mi></math> and narrow spectra, the PBH masses associated with the SIGWs are anchored at the planetary mass scale around <math display=\"inline\"><msup><mn>10</mn><mrow><mo>-</mo><mn>6</mn></mrow></msup><mo>−</mo><msup><mn>10</mn><mrow><mo>-</mo><mn>4</mn></mrow></msup><msub><mi>M</mi><mo stretchy=\"false\">⊙</mo></msub></math>. This establishes a consistent physical framework that naturally bridges the nanohertz gravitational wave background with the dark matter candidates implied by the Optical Gravitational Lensing Experiment microlensing events.",
-   "primary_category": "astro-ph.CO",
-   "categories": [
-    "astro-ph.CO"
-   ],
-   "cross_listed": false,
-   "announce_type": "",
-   "published": "2026-10-13T00:00:00Z",
-   "updated": "2026-10-13T00:00:00Z",
-   "comment": "",
-   "journal_ref": "",
-   "doi": "10.1103/zpvp-rmd8",
-   "abs_url": "https://arxiv.org/abs/2610.18460",
-   "pdf_url": "https://arxiv.org/pdf/2610.18460",
-   "source": "inspire"
   }
  ]
 }
